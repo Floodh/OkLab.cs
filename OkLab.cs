@@ -116,10 +116,19 @@ namespace OkLab
             this.luminance = luminance;
             this.maxGamma = maxGamma;
             this.radiance = radiance;
-            palette = new Lab[length];
+            this.palette = new Lab[length];
             this.Set(length, luminance, maxGamma, radiance);
         } 
-
+        private Palette(Palette palette)
+        {
+            this.length = palette.length;
+            this.luminance = palette.luminance;
+            this.maxGamma = palette.maxGamma;
+            this.radiance = palette.radiance;
+            this.palette = new Lab[palette.length];
+            for (int i = 0; i < palette.length; i++)
+                this.palette[i] = palette.palette[i];
+        } 
         //  don't need to make this public, as one can just make a new instance.
         private void Set(int length, double luminance, double maxGamma, double radiance)
         {
@@ -130,7 +139,6 @@ namespace OkLab
             for (int i = 0; i < length; i++)
             {
                 double gamma = maxGamma * (((double)(i)) / length);
-                Console.WriteLine(gamma);
                 palette[i] = new Lab(luminance, gamma * a_bias, gamma * b_bias);
             }            
         }
@@ -147,14 +155,22 @@ namespace OkLab
         }
 
         /// <summary>
+        /// Returns a Deep copy.
+        /// </summary>
+        /// <returns></returns>
+        public Palette Copy()
+        {
+            return new Palette(this);
+        }
+
+        /// <summary>
         /// Exposes Lab struct that can be implicitly converted to RGB and/or System.Drawing.Color
         /// </summary>
         /// <param name="i"></param>
         /// <returns></returns>
-        public Lab this[int i]
+        public readonly Lab this[int i]
         {
             get {return palette[i];}
-            set {palette[i] = value;}
         }        
 
     }
