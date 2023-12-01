@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 
 namespace OkLab
@@ -65,6 +66,24 @@ namespace OkLab
         }        
     };
 
+    public static class ColorWheel
+    {
+        public static Lab[] GetPallet(int length, double luminance, double maxGamma, double radiance)
+        {
+            Lab[] result = new Lab[length];
+            double a_bias = Math.Asin(radiance);
+            double b_bias = Math.Acos(radiance);
+
+            for (int i = 0; i < length; i++)
+            {
+                double gamma = maxGamma * ((double)(i) / length);
+                result[i] = new Lab(luminance, gamma * a_bias, gamma * b_bias);
+            }
+
+            return result;
+        }        
+    }
+
     internal static class InternalCalculation
     {
 
@@ -109,21 +128,6 @@ namespace OkLab
                 -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
                 -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s
             );
-        }
-
-        public static Lab[] GetColorPallet(int length, double luminance, double maxGamma, double radiance)
-        {
-            Lab[] result = new Lab[length];
-            double a_bias = Math.Asin(radiance);
-            double b_bias = Math.Acos(radiance);
-
-            for (int i = 0; i < length; i++)
-            {
-                double gamma = maxGamma * (i / length);
-                result[i] = new Lab(){L = luminance, a = gamma * a_bias, b = gamma * b_bias};
-            }
-
-            return result;
         }
 
     }
