@@ -1,11 +1,18 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace OkLab
 {
 
+    /// <summary>
+    /// Color based of the OkLab color space. 
+    /// Can be implicitly converted to RGB and System.Drawing.Color.
+    /// </summary>
     public struct Lab
     {
+
         public double L, a, b; 
         public Lab(double L, double a, double b)
         {
@@ -32,8 +39,13 @@ namespace OkLab
 
     }
 
+    /// <summary>
+    /// Color based of RGB values in the range : [0, 1.0]. 
+    /// Can be implicitly converted to Lab and System.Drawing.Color.
+    /// </summary>
     public struct RGB 
     {
+
         public double r,g,b;
         public RGB(double r, double g, double b)
         {
@@ -63,25 +75,88 @@ namespace OkLab
         public override string ToString()
         {
             return $"RGB [R={r}, G={g}, B={b}]";
-        }        
+        }
+
     };
 
-    public static class ColorWheel
+    /// <summary>
+    /// Color palette picker.
+    /// </summary>
+    public struct Palette : IEnumerable<Lab>
     {
-        public static Lab[] GetPallet(int length, double luminance, double maxGamma, double radiance)
+        private Lab[] palette;
+
+        /// <summary>
+        /// Determines the size of the color palette.
+        /// </summary>
+        public int Length{get {return length;} set {this.length = value; this.Set(length, luminance, maxGamma, radiance);}}
+        private int length;
+
+        /// <summary>
+        /// Determines the brightness.
+        /// </summary>
+        public double Luminance{get {return luminance;} set {this.luminance = value; this.Set(length, luminance, maxGamma, radiance);}}
+        private double luminance;
+
+        /// <summary>
+        /// Determines the maximum combined gamma values of a and b in the Lab struct.
+        /// </summary>
+        public double MaxGamma{get {return maxGamma;} set {this.maxGamma = value; this.Set(length, luminance, maxGamma, radiance);}}
+        private double maxGamma;
+
+        /// <summary>
+        /// Determines how the gamma is split between a and b in the Lab struct.
+        /// </summary>
+        public double Radiance{get {return radiance;} set {this.radiance = value; this.Set(length, luminance, maxGamma, radiance);}}
+        private double radiance;
+
+        public Palette(int length, double luminance, double maxGamma, double radiance)
         {
-            Lab[] result = new Lab[length];
-            double a_bias = Math.Asin(radiance);
-            double b_bias = Math.Acos(radiance);
+            this.length = length;
+            this.luminance = luminance;
+            this.maxGamma = maxGamma;
+            this.radiance = radiance;
+            palette = new Lab[length];
+            this.Set(length, luminance, maxGamma, radiance);
+        } 
+
+        //  don't need to make this public, as one can just make a new instance.
+        private void Set(int length, double luminance, double maxGamma, double radiance)
+        {
+            palette = new Lab[length];
+            double a_bias = Math.Sin(radiance);
+            double b_bias = Math.Cos(radiance);
 
             for (int i = 0; i < length; i++)
             {
-                double gamma = maxGamma * ((double)(i) / length);
-                result[i] = new Lab(luminance, gamma * a_bias, gamma * b_bias);
-            }
+                double gamma = maxGamma * (((double)(i)) / length);
+                Console.WriteLine(gamma);
+                palette[i] = new Lab(luminance, gamma * a_bias, gamma * b_bias);
+            }            
+        }
 
-            return result;
+        public IEnumerator<Lab> GetEnumerator()
+        {
+            foreach (Lab item in this.palette)
+                yield return item;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Exposes Lab struct that can be implicitly converted to RGB and/or System.Drawing.Color
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public Lab this[int i]
+        {
+            get {return palette[i];}
+            set {palette[i] = value;}
         }        
+
     }
 
     internal static class InternalCalculation
